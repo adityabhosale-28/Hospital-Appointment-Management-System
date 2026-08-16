@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Login - MyClinic</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="auth-wrapper">
+        <div class="auth-image">
+            <div>
+                <h1 style="font-size:3rem; margin-bottom:1rem;">Welcome Back</h1>
+                <p style="font-size:1.1rem; opacity:0.9;">Log in to access your MyClinic portal seamlessly.</p>
+            </div>
+        </div>
+        
+        <div class="auth-form-container">
+            <div class="auth-container">
+                <a href="index.html" style="text-decoration:none; color:var(--text-muted); display:inline-block; margin-bottom:1rem;"><i class="fas fa-arrow-left"></i> Back to Home</a>
+                <h2 style="margin-bottom: 2rem; color:var(--text-main);">🏥 MyClinic Login</h2>
+                
+                <div class="toggle-group" id="roleToggle">
+                    <button class="active" onclick="setRole('Patient')"><i class="fas fa-user"></i> Patient</button>
+                    <button onclick="setRole('Doctor')"><i class="fas fa-user-md"></i> Doctor</button>
+                    <button onclick="setRole('Admin')"><i class="fas fa-shield-alt"></i> Admin</button>
+                </div>
+
+                <form id="loginForm">
+                    <div class="form-group input-with-icon">
+                        <label>Email Address</label>
+                        <i class="fas fa-envelope"></i>
+                        <input type="email" id="email" placeholder="Enter your email" required>
+                    </div>
+                    <div class="form-group input-with-icon">
+                        <label>Password</label>
+                        <i class="fas fa-lock"></i>
+                        <input type="password" id="password" placeholder="Enter your password" required>
+                    </div>
+                    <button type="submit" class="btn" style="width:100%; margin-top:10px;"><i class="fas fa-sign-in-alt"></i> Login Securely</button>
+                </form>
+                <p style="text-align:center; margin-top:1.5rem; font-size:0.95rem; color:var(--text-muted);">Don't have an account? <a href="register.html" style="color:var(--primary-color); font-weight:700; text-decoration:none;">Register Here</a></p>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/api.js"></script>
+    <script>
+        let currentRole = 'Patient';
+        
+        function setRole(role) {
+            currentRole = role;
+            const buttons = document.getElementById('roleToggle').children;
+            for(let btn of buttons) {
+                btn.classList.remove('active');
+                if(btn.innerText.includes(role)) btn.classList.add('active');
+            }
+        }
+
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+
+            try {
+                const res = await api.request('/login', 'POST', { email, password, role: currentRole });
+                const token = res.token || res.access_token;
+                const userData = res.user ? res.user : { name: res.name || 'User', id: res.id };
+                api.setSession({ token, role: currentRole, user: userData });
+                window.location.href = `${currentRole.toLowerCase()}-dashboard.html`;
+            } catch (err) {
+                alert("Login Error: " + err.message);
+            }
+        });
+    </script>
+</body>
+</html>

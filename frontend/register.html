@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Register - MyClinic</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="auth-wrapper">
+        <div class="auth-image" style="background: linear-gradient(135deg, rgba(16,185,129,0.9), rgba(4,120,87,0.9)), url('https://images.unsplash.com/photo-1551076805-e1869033e561?auto=format&fit=crop&w=1200') center/cover;">
+            <div>
+                <h1 style="font-size:3rem; margin-bottom:1rem;">Join MyClinic</h1>
+                <p style="font-size:1.1rem; opacity:0.9;">Sign up today to transform your healthcare experience.</p>
+            </div>
+        </div>
+        
+        <div class="auth-form-container">
+            <div class="auth-container" style="max-width:500px;">
+                <a href="index.html" style="text-decoration:none; color:var(--text-muted); display:inline-block; margin-bottom:1rem;"><i class="fas fa-arrow-left"></i> Back to Home</a>
+                <h2 style="margin-bottom: 1.5rem; color:var(--text-main);">🏥 Create Account</h2>
+                
+                <div class="toggle-group" id="roleToggle">
+                    <button class="active" onclick="setRole('Patient')"><i class="fas fa-user"></i> Patient</button>
+                    <button onclick="setRole('Doctor')"><i class="fas fa-user-md"></i> Doctor</button>
+                </div>
+
+                <form id="registerForm">
+                    <div class="form-group input-with-icon">
+                        <label>Full Name</label>
+                        <i class="fas fa-id-card"></i>
+                        <input type="text" id="name" placeholder="Enter full name" required>
+                    </div>
+
+                    <!-- Dynamic Fields -->
+                    <div id="dynamicFields"></div>
+
+                    <div class="form-group input-with-icon">
+                        <label>Phone Number</label>
+                        <i class="fas fa-phone"></i>
+                        <input type="text" id="phone" placeholder="Enter phone number" required>
+                    </div>
+
+                    <div class="form-group input-with-icon">
+                        <label>Email Address</label>
+                        <i class="fas fa-envelope"></i>
+                        <input type="email" id="email" placeholder="Enter email" required>
+                    </div>
+                    <div class="form-group input-with-icon">
+                        <label>Secure Password</label>
+                        <i class="fas fa-lock"></i>
+                        <input type="password" id="password" placeholder="Create a password" required>
+                    </div>
+                    <button type="submit" class="btn" style="width:100%; margin-top:10px; background:var(--success);"><i class="fas fa-user-plus"></i> Register Now</button>
+                </form>
+                <p style="text-align:center; margin-top:1.5rem; font-size:0.95rem; color:var(--text-muted);">Already have an account? <a href="login.html" style="color:var(--primary-color); font-weight:700; text-decoration:none;">Login Here</a></p>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/api.js"></script>
+    <script>
+        let currentRole = 'Patient';
+        const dynamicFields = document.getElementById('dynamicFields');
+
+        function setRole(role) {
+            currentRole = role;
+            const buttons = document.getElementById('roleToggle').children;
+            for(let btn of buttons) {
+                btn.classList.remove('active');
+                if(btn.innerText.includes(role)) btn.classList.add('active');
+            }
+            renderFields();
+        }
+
+        function renderFields() {
+            if (currentRole === 'Patient') {
+                dynamicFields.innerHTML = `
+                    <div style="display:flex; gap:10px;">
+                        <div class="form-group" style="flex:1;">
+                            <label>Age</label>
+                            <input type="number" id="age" placeholder="Age" required>
+                        </div>
+                        <div class="form-group" style="flex:1;">
+                            <label>Gender</label>
+                            <select id="gender"><option>Male</option><option>Female</option><option>Other</option></select>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Blood Group</label>
+                        <select id="bloodGrp"><option>A+</option><option>O+</option><option>B+</option><option>AB+</option><option>A-</option><option>O-</option><option>B-</option><option>AB-</option></select>
+                    </div>
+                `;
+            } else {
+                dynamicFields.innerHTML = `
+                    <div class="form-group">
+                        <label>Qualification</label>
+                        <input type="text" id="qual" placeholder="e.g. MBBS, MD" required>
+                    </div>
+                    <div style="display:flex; gap:10px;">
+                        <div class="form-group" style="flex:1;">
+                            <label>Specialization</label>
+                            <input type="text" id="spec" placeholder="e.g. Cardiology" required>
+                        </div>
+                        <div class="form-group" style="flex:1;">
+                            <label>Fee (₹)</label>
+                            <input type="number" id="fee" placeholder="Consultation Fee" required>
+                        </div>
+                    </div>
+                `;
+            }
+        }
+
+        document.getElementById('registerForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const payload = {
+                name: document.getElementById('name').value,
+                phone: document.getElementById('phone').value,
+                email: document.getElementById('email').value,
+                password: document.getElementById('password').value
+            };
+
+            if (currentRole === 'Patient') {
+                payload.age = parseInt(document.getElementById('age').value);
+                payload.gender = document.getElementById('gender').value;
+                payload.blood_grp = document.getElementById('bloodGrp').value;
+                payload.role = 'Patient';
+            } else {
+                payload.qualification = document.getElementById('qual').value;
+                payload.specialization = document.getElementById('spec').value;
+                payload.fee = parseFloat(document.getElementById('fee').value);
+                payload.role = 'Doctor';
+            }
+
+            try {
+                await api.request('/register', 'POST', payload);
+                alert("Registration Successful! Please login.");
+                window.location.href = 'login.html';
+            } catch (err) {
+                alert("Error: " + err.message);
+            }
+        });
+
+        renderFields();
+    </script>
+</body>
+</html>

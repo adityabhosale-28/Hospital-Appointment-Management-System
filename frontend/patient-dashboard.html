@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Patient Dashboard</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="dashboard-container">
+        <div class="sidebar">
+            <h2>MyClinic</h2>
+            <div style="color:var(--text-muted); font-size:0.85rem; padding: 0 16px; margin-bottom: 2rem; font-weight:600;" id="userNameText">Patient Panel</div>
+            <a href="#" onclick="showSection('book')" class="active"><i class="fas fa-calendar-plus" style="width:20px;"></i> Book Appointment</a>
+            <a href="#" onclick="showSection('appointments')"><i class="fas fa-notes-medical" style="width:20px;"></i> My Appointments</a>
+            <a href="#" onclick="api.logout()"><i class="fas fa-sign-out-alt" style="width:20px;"></i> Logout</a>
+        </div>
+        <div class="main-content">
+            <h1 class="mb-2">Patient Dashboard</h1>
+
+            <div id="book-sec" class="glass-box" style="max-width:600px;">
+                <h3>Book new Appointment</h3>
+                <form id="bookForm" class="mt-2">
+                    <div class="form-group">
+                        <label>Select Doctor</label>
+                        <select id="docSelect" required></select>
+                    </div>
+                    <div class="form-group">
+                        <label>Date</label>
+                        <input type="date" id="appDate" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Time</label>
+                        <input type="time" id="appTime" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Problem Description</label>
+                        <textarea id="appProblem" rows="3"></textarea>
+                    </div>
+                    <button type="submit" class="btn">Book Now</button>
+                </form>
+            </div>
+
+            <div id="appointments-sec" class="table-container" style="display:none;">
+                <h3>My Appointments</h3>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Token No</th><th>Doctor</th><th>Date</th><th>Time</th><th>Status</th><th>Problem</th><th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="myAppsBody"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- modal for details -->
+    <div id="detailsModal" class="modal" style="display:none; position:fixed; z-index:1000; left:0; top:0; width:100%; height:100%; overflow:auto; background-color:rgba(0,0,0,0.5); justify-content:center; align-items:center;">
+        <div class="modal-content glass-box" style="background:rgba(255,255,255,0.9); padding:20px; border-radius:10px; width:400px; color:#333;">
+            <h3 style="margin-bottom:1rem;">Appointment Details</h3>
+            <div id="detailsContent">Loading...</div>
+            <button class="btn" style="margin-top:15px;" onclick="document.getElementById('detailsModal').style.display='none'">Close</button>
+        </div>
+    </div>
+
+    <script src="js/api.js"></script>
+    <script>
+        api.checkAuth('Patient');
+        const user = api.getUser();
+        document.getElementById('userNameText').innerText = `Patient: ${user.name}`;
+
+        function showSection(sec) {
+            document.getElementById('book-sec').style.display = 'none';
+            document.getElementById('appointments-sec').style.display = 'none';
+            document.getElementById(`${sec}-sec`).style.display = 'block';
+            if(sec === 'appointments') loadApps();
+        }
+
+        async function loadDoctors() {
+            try {
+                const res = await api.request('/patient/doctors');
+                const select = document.getElementById('docSelect');
+                select.innerHTML = res.doctors.map(d => `
+                    <option value="${d.Doctor_ID}">${d.Name} (${d.Specialization}) - Rs.${d.Fee}</option>
+                `).join('');
+            } catch(e) {
+                alert("Error: " + e.message);
+            }
+        }
+
+        async function loadApps() {
+            try {
+                const res = await api.request('/patient/appointments');
+                const tbody = document.getElementById('myAppsBody');
+                tbody.innerHTML = res.appointments.map(a => `
+                    <tr>
+                        <td>${a.Token_No}</td>
+                        <td>${a.Doctor_Name}</td>
+                        <td>${a.Date}</td>
+                        <td>${a.Time}</td>
+                        <td><span class="badge ${a.Status.toLowerCase() === 'completed' ? 'badge-completed' : 'badge-pending'}"><i class="fas ${a.Status.toLowerCase() === 'completed' ? 'fa-check' : 'fa-clock'}"></i> ${a.Status}</span></td>
+                        <td>${a.Problem || '-'}</td>
+                        <td>
+                            ${a.Status === 'Completed' ? `<button class="btn btn-small" onclick="viewDetails(${a.Appointment_ID})"><i class="fas fa-eye"></i> Details</button>` : '-'}
+                        </td>
+                    </tr>
+                `).join('');
+            } catch(e) {
+                alert("Error: " + e.message);
+            }
+        }
+
+        document.getElementById('bookForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const payload = {
+                doctor_id: document.getElementById('docSelect').value,
+                date: document.getElementById('appDate').value,
+                time: document.getElementById('appTime').value,
+                problem: document.getElementById('appProblem').value
+            };
+            try {
+                await api.request('/patient/book', 'POST', payload);
+                alert("Appointment Booked!");
+                e.target.reset();
+                showSection('appointments');
+            } catch(e) {
+                alert("Error: " + e.message);
+            }
+        });
+
+        async function viewDetails(appId) {
+            document.getElementById('detailsModal').style.display = 'flex';
+            const content = document.getElementById('detailsContent');
+            content.innerHTML = "Loading...";
+            try {
+                const res = await api.request(`/patient/appointment/${appId}/details`);
+                let html = "";
+                if(res.prescription) {
+                    html += `<h4>Prescription</h4>
+                             <p><b>Diagnosis:</b> ${res.prescription.Diagnosis}</p>
+                             <p><b>Medicine:</b> ${res.prescription.Medicine}</p>
+                             <p><b>Dosage:</b> ${res.prescription.Dosage}</p><hr>`;
+                }
+                if(res.bill) {
+                    html += `<h4>Bill</h4>
+                             <p><b>Amount:</b> Rs. ${res.bill.Amount}</p>
+                             <p><b>Status:</b> ${res.bill.Payment_Status}</p>`;
+                    if (res.bill.Payment_Status === 'Unpaid') {
+                        html += `
+                            <div style="margin-top:15px; text-align:center;" id="payOptions">
+                                <button class="btn" style="background:#28a745;" onclick="showQRPay(${appId})">Pay Online QR</button>
+                                <button class="btn" style="background:#ffc107; color:#333;" onclick="payBill(${appId}, 'Cash')">Pay Cash at Desk</button>
+                            </div>
+                            <div id="qrSection" style="display:none; text-align:center; margin-top:15px;">
+                                <p>Scan to Pay Rs. ${res.bill.Amount}</p>
+                                <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=upi://pay?pa=hospital@upi&am=${res.bill.Amount}&cu=INR" alt="QR Code" style="margin-bottom:10px;">
+                                <br>
+                                <button class="btn" onclick="payBill(${appId}, 'Online')">I have Paid</button>
+                            </div>
+                        `;
+                    }
+                }
+                content.innerHTML = html || "No details available.";
+            } catch(e) {
+                content.innerHTML = "Error: " + e.message;
+            }
+        }
+
+        function showQRPay(appId) {
+            document.getElementById('payOptions').style.display = 'none';
+            document.getElementById('qrSection').style.display = 'block';
+        }
+
+        async function payBill(appId, mode) {
+            try {
+                const res = await api.request(`/patient/pay-bill/${appId}`, 'POST', { payment_mode: mode });
+                alert(res.message || "Payment recorded!");
+                document.getElementById('detailsModal').style.display = 'none';
+            } catch(e) {
+                alert("Error: " + e.message);
+            }
+        }
+
+        loadDoctors();
+    </script>
+</body>
+</html>

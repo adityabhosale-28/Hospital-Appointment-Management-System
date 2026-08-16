@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Admin Dashboard</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="dashboard-container">
+        <div class="sidebar">
+            <h2>MyClinic</h2>
+            <div style="color:var(--text-muted); font-size:0.85rem; padding: 0 16px; margin-bottom: 2rem; font-weight:600;" id="userNameText">Admin Panel</div>
+            <a href="#" onclick="showSection('doctors')" class="active"><i class="fas fa-user-md" style="width:20px;"></i> Doctors</a>
+            <a href="#" onclick="showSection('patients')"><i class="fas fa-users" style="width:20px;"></i> Patients</a>
+            <a href="#" onclick="showSection('appointments')"><i class="fas fa-calendar-check" style="width:20px;"></i> Appointments</a>
+            <a href="#" onclick="api.logout()"><i class="fas fa-sign-out-alt" style="width:20px;"></i> Logout</a>
+        </div>
+        <div class="main-content">
+            <h1 class="mb-2">Admin Dashboard</h1>
+
+            <div class="dash-cards" id="adminCards">
+                <!-- Cards will render dynamically here -->
+            </div>
+            
+            <div id="doctors-sec" class="table-container">
+                <h3>All Doctors</h3>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>ID</th><th>Name</th><th>Spec</th><th>Fee</th><th>Status</th><th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="doctorsBody"></tbody>
+                </table>
+            </div>
+
+            <div id="patients-sec" class="table-container" style="display:none;">
+                <h3>All Patients</h3>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>ID</th><th>Name</th><th>Age</th><th>Gender</th><th>Phone</th>
+                        </tr>
+                    </thead>
+                    <tbody id="patientsBody"></tbody>
+                </table>
+            </div>
+
+            <div id="appointments-sec" class="table-container" style="display:none;">
+                <h3>All Appointments</h3>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Token No</th><th>Patient</th><th>Doctor</th><th>Date</th><th>Time</th><th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="appointmentsBody"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/api.js"></script>
+    <script>
+        api.checkAuth('Admin');
+
+        function showSection(sec) {
+            document.getElementById('doctors-sec').style.display = 'none';
+            document.getElementById('patients-sec').style.display = 'none';
+            document.getElementById('appointments-sec').style.display = 'none';
+            document.getElementById(`${sec}-sec`).style.display = 'block';
+            loadData(sec);
+        }
+
+        async function verifyDoctor(id) {
+            if(!confirm("Approve this doctor?")) return;
+            try {
+                await api.request(`/admin/verify-doctor/${id}`, 'POST');
+                alert("Verified!");
+                loadData('doctors');
+            } catch(e) {}
+        }
+
+        async function loadData(sec) {
+            try {
+                if (sec === 'doctors') {
+                    const res = await api.request('/admin/doctors');
+                    const tbody = document.getElementById('doctorsBody');
+                    tbody.innerHTML = res.doctors.map(d => `
+                        <tr>
+                            <td>${d.Doctor_ID}</td>
+                            <td>${d.Name}</td>
+                            <td>${d.Specialization}</td>
+                            <td>Rs. ${d.Fee}</td>
+                            <td><span class="badge ${d.is_approved ? 'badge-approved' : 'badge-pending'}"><i class="fas ${d.is_approved ? 'fa-check' : 'fa-clock'}"></i> ${d.is_approved ? 'Verified' : 'Pending'}</span></td>
+                            <td>
+                                ${!d.is_approved ? `<button class="btn btn-small" style="background:var(--success);" onclick="verifyDoctor(${d.Doctor_ID})"><i class="fas fa-check-circle"></i> Approve</button>` : `<span style="color:var(--text-muted); font-size:0.85rem;"><i class="fas fa-shield-alt"></i> Active</span>`}
+                            </td>
+                        </tr>
+                    `).join('');
+                }
+                if (sec === 'patients') {
+                    const res = await api.request('/admin/patients');
+                    const tbody = document.getElementById('patientsBody');
+                    tbody.innerHTML = res.patients.map(p => `
+                        <tr>
+                            <td>${p.Patient_ID}</td>
+                            <td>${p.Name}</td>
+                            <td>${p.Age}</td>
+                            <td>${p.Gender}</td>
+                            <td>${p.Phone}</td>
+                        </tr>
+                    `).join('');
+                }
+                if (sec === 'appointments') {
+                    const res = await api.request('/admin/appointments');
+                    const tbody = document.getElementById('appointmentsBody');
+                    tbody.innerHTML = res.appointments.map(a => `
+                        <tr>
+                            <td><b>${a.Token_No}</b></td>
+                            <td>${a.Patient_Name || '-'}</td>
+                            <td>Dr. ${a.Doctor_Name || '-'}</td>
+                            <td>${a.Date}</td>
+                            <td>${a.Time}</td>
+                            <td><span class="badge ${a.Status.toLowerCase() === 'completed' ? 'badge-completed' : 'badge-pending'}">${a.Status}</span></td>
+                        </tr>
+                    `).join('');
+                }
+            } catch(e) {
+                alert("Error: " + e.message);
+            }
+        }
+
+        async function loadStats() {
+            try {
+                const [drRes, ptRes, apRes] = await Promise.all([
+                    api.request('/admin/doctors'), 
+                    api.request('/admin/patients'), 
+                    api.request('/admin/appointments')
+                ]);
+                document.getElementById('adminCards').innerHTML = `
+                    <div class="dash-card">
+                        <i class="fas fa-users"></i>
+                        <div class="dash-card-info"><h4>Total Patients</h4><h2>${ptRes.patients.length}</h2></div>
+                    </div>
+                    <div class="dash-card">
+                        <i class="fas fa-user-md"></i>
+                        <div class="dash-card-info"><h4>Doctors</h4><h2>${drRes.doctors.length}</h2></div>
+                    </div>
+                    <div class="dash-card">
+                        <i class="fas fa-calendar-check"></i>
+                        <div class="dash-card-info"><h4>Appointments</h4><h2>${apRes.appointments.length}</h2></div>
+                    </div>
+                `;
+            } catch(e) {
+                document.getElementById('adminCards').innerHTML = `<p style="color:var(--danger)">Failed to load statistics</p>`;
+            }
+        }
+
+        // initial load
+        loadStats();
+        loadData('doctors');
+    </script>
+</body>
+</html>

@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>MyClinic - Professional Healthcare Management</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* Specific Landing Page Styles */
+        body { background: #ffffff; }
+        
+        /* Top Contact Bar */
+        .top-bar {
+            background: #84cc16; /* Professional green similar to docpulse */
+            color: #ffffff;
+            padding: 8px 5%;
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            font-size: 0.9rem;
+            font-weight: 600;
+            gap: 20px;
+        }
+        
+        .top-bar a {
+            color: #ffffff;
+            text-decoration: none;
+        }
+
+        /* Navbar */
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 5%;
+            background: #ffffff;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .navbar-brand {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 1.8rem;
+            font-weight: 800;
+            color: var(--primary-color);
+            text-decoration: none;
+        }
+        
+        .navbar-brand i { 
+            color: #10b981;
+            font-size: 2rem;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+
+        .nav-links a {
+            text-decoration: none;
+            color: var(--text-main);
+            font-weight: 600;
+            font-size: 0.95rem;
+            padding: 8px 18px;
+            border-radius: 20px;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .nav-links a:hover {
+            color: var(--primary-color);
+            background: var(--primary-light);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 6px rgba(0,0,0,0.02);
+        }
+
+        .nav-links a i {
+            font-size: 1.1rem;
+            color: var(--text-muted);
+            transition: color 0.3s ease;
+        }
+
+        .nav-links a:hover i {
+            color: var(--primary-color);
+        }
+
+        .nav-actions {
+            display: flex;
+            gap: 12px;
+        }
+        
+        .nav-actions .btn-outline {
+            background: transparent;
+            color: var(--primary-color);
+            border: 2px solid var(--primary-color);
+            padding: 8px 20px;
+        }
+        
+        .nav-actions .btn-outline:hover {
+            background: var(--primary-light);
+        }
+
+        /* Hero Section */
+        .hero {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 5rem 5%;
+            background: linear-gradient(120deg, #f8fafc 0%, #eff6ff 100%);
+            min-height: calc(100vh - 120px);
+        }
+
+        .hero-content {
+            flex: 1;
+            max-width: 600px;
+        }
+
+        .hero-content h1 {
+            font-size: 3rem;
+            font-weight: 800;
+            color: #0f172a;
+            line-height: 1.25;
+            margin-bottom: 1.5rem;
+            letter-spacing: -1px;
+        }
+
+        .hero-content h1 span {
+            color: var(--primary-color);
+        }
+
+        .hero-content p {
+            font-size: 1.1rem;
+            color: var(--text-muted);
+            margin-bottom: 2rem;
+        }
+
+        .feature-list {
+            list-style: none;
+            margin-bottom: 2.5rem;
+        }
+        
+        .feature-list li {
+            font-size: 1.05rem;
+            color: var(--text-main);
+            font-weight: 600;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .feature-list li i {
+            color: #84cc16;
+            font-size: 1.2rem;
+        }
+
+        .hero-image {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            position: relative;
+        }
+
+        .hero-image img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            border: 8px solid #ffffff;
+            transform: rotate(2deg);
+        }
+
+        .contact-footer {
+            background: #0f172a;
+            color: #94a3b8;
+            padding: 3rem 5%;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+        }
+
+        .contact-footer h3 {
+            color: #ffffff;
+            font-size: 1.3rem;
+            margin-bottom: 1rem;
+        }
+
+        .contact-info {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        
+        .contact-info div {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .contact-info i {
+            color: #3b82f6;
+            width: 20px;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Top Contact Bar -->
+    <div class="top-bar">
+        <div><i class="fas fa-phone-alt"></i> Sales: +1 (800) 555-0199</div>
+        <div><i class="fas fa-envelope"></i> <a href="mailto:admin@hospital.com">admin@hospital.com</a></div>
+    </div>
+
+    <!-- Navigation Bar -->
+    <nav class="navbar">
+        <a href="index.html" class="navbar-brand">
+            <i class="fa-solid fa-hospital"></i> MyClinic
+        </a>
+        <div class="nav-links">
+            <a href="#"><i class="fas fa-home"></i> Home</a>
+            <a href="#contact"><i class="fas fa-headset"></i> Contact Us</a>
+        </div>
+        <div class="nav-actions">
+            <a href="login.html" class="btn btn-outline" style="text-decoration:none;">Login</a>
+            <a href="register.html" class="btn" style="text-decoration:none;">Register</a>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="hero-content">
+            <h1>Explore Comprehensive Cloud-Based <span>Healthcare Software</span> Solutions.</h1>
+            <p>Experience state-of-the-art digital solutions with MyClinic's Clinic Management Software (CMS), Patient Management Software (PMS), and Hospital Integrated Management Software (HIMS), expertly tailored to meet the exact unique needs of doctors, clinics, and modern hospitals.</p>
+            
+            <ul class="feature-list">
+                <li><i class="fas fa-check-circle"></i> For Independent Clinics</li>
+                <li><i class="fas fa-check-circle"></i> For Medical Centers & Pharmacies</li>
+                <li><i class="fas fa-check-circle"></i> For Multi-Specialty Hospitals (HIMS)</li>
+                <li><i class="fas fa-check-circle"></i> Complete Appointment & Billing Logic</li>
+            </ul>
+
+            <a href="register.html" class="btn" style="font-size: 1.1rem; padding: 15px 30px; text-decoration:none;"><i class="fas fa-calendar-check" style="margin-right:8px;"></i> Schedule A Demo</a>
+        </div>
+        
+        <div class="hero-image">
+            <!-- Using a high-quality free Unsplash medical image to represent the unique users beautifully -->
+            <img src="https://images.unsplash.com/photo-1551076805-e1869033e561?auto=format&fit=crop&w=1000&q=80" alt="Professional Healthcare Team">
+        </div>
+    </section>
+
+    <!-- Footer Contact Section -->
+    <footer id="contact" class="contact-footer">
+        <div>
+            <a href="index.html" class="navbar-brand" style="color:#ffffff; margin-bottom: 1rem; display:inline-flex;">
+                <i class="fa-solid fa-hospital"></i> MyClinic
+            </a>
+            <p style="max-width: 300px; margin-top: 1rem; line-height: 1.5;">Empowering healthcare professionals with next-generation tools to streamline operations and enhance patient care globally.</p>
+        </div>
+        <div>
+            <h3>Contact Information</h3>
+            <div class="contact-info">
+                <div><i class="fas fa-map-marker-alt"></i> Akurdi Railway station, Pune</div>
+                <div><i class="fas fa-phone-alt"></i> +1 (800) 555-0199</div>
+                <div><i class="fas fa-envelope"></i> admin@hospital.com</div>
+            </div>
+        </div>
+    </footer>
+
+</body>
+</html>
